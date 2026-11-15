@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Mini panel multiroom : état BT, reconnexion, bascule Cast <-> BT. Stdlib uniquement."""
+"""Mini panel octopus : état BT, reconnexion, bascule Cast <-> BT. Stdlib uniquement."""
 import json
 import os
 import subprocess
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-DEVICES = os.environ.get("DEVICES", "/opt/multiroom/devices.json")
+DEVICES = os.environ.get("DEVICES", "/opt/octopus/devices.json")
 PORT = int(os.environ.get("PORT", "8080"))
 MA_SETTINGS = os.environ.get("MA_SETTINGS", "/opt/ma/settings.json")
 SOURCES = ("spotify", "deezer")
@@ -69,7 +69,7 @@ def set_mode(d, mode):
 
 
 PAGE = """<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width">
-<title>Multiroom</title>
+<title>Octopus</title>
 <style>body{font:16px system-ui;max-width:40em;margin:1em auto;padding:0 1em}
 td{padding:.4em}.on{color:green}.off{color:#c00}</style>
 <h1>Sources</h1><table id=s></table>

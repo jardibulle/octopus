@@ -1,10 +1,10 @@
 [Unit]
-Description=Multiroom panel
+Description=Octopus panel
 After=network-online.target bluetooth.service
 
 [Service]
 User=__USER__
-ExecStart=/usr/bin/python3 /opt/multiroom/panel.py
+ExecStart=/usr/bin/python3 /opt/octopus/panel.py
 Restart=always
 
 [Install]

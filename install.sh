@@ -1,5 +1,5 @@
 #!/bin/bash
-# Install idempotente du multiroom. Usage : sudo ./install.sh   (relançable sans risque)
+# Install idempotente d'octopus (multiroom). Usage : sudo ./install.sh   (relançable sans risque)
 set -euo pipefail
 [ "$(id -u)" = 0 ] || { echo "lancer avec sudo" >&2; exit 1; }
 U=${SUDO_USER:?lancer via sudo}
@@ -54,22 +54,23 @@ docker inspect music-assistant >/dev/null 2>&1 || docker run -d --name music-ass
   -v /opt/ma:/data ghcr.io/music-assistant/server:latest
 
 # Fichiers du projet
-install -d /opt/multiroom /etc/squeezelite
-install -m 755 "$SRC/sq-run.sh" "$SRC/panel.py" /opt/multiroom/
-install -m 644 "$SRC/devices.json" /opt/multiroom/
+rm -rf /opt/multiroom /etc/sudoers.d/multiroom   # ancien nom du projet
+install -d /opt/octopus /etc/squeezelite
+install -m 755 "$SRC/sq-run.sh" "$SRC/panel.py" /opt/octopus/
+install -m 644 "$SRC/devices.json" /opt/octopus/
 for f in squeezelite@.service panel.service; do
   sed "s/__USER__/$U/; s/__UID__/$UID_U/" "$SRC/$f" > "/etc/systemd/system/$f"
 done
-cat > /etc/sudoers.d/multiroom <<EOF
+cat > /etc/sudoers.d/octopus <<EOF
 $U ALL=(root) NOPASSWD: /usr/bin/systemctl enable --now squeezelite@*, /usr/bin/systemctl disable --now squeezelite@*, /usr/bin/systemctl try-restart squeezelite@*
 EOF
-chmod 440 /etc/sudoers.d/multiroom
-visudo -cf /etc/sudoers.d/multiroom
+chmod 440 /etc/sudoers.d/octopus
+visudo -cf /etc/sudoers.d/octopus
 
 # Un .env par sortie ; renvoie les sorties à activer par défaut (bt / local).
 TO_ENABLE=$(python3 - <<'EOF'
 import hashlib, json
-for d in json.load(open("/opt/multiroom/devices.json")):
+for d in json.load(open("/opt/octopus/devices.json")):
     n, mac = d["name"], d.get("mac", "")
     h = hashlib.md5(n.encode()).hexdigest()
     sq_mac = "02:" + ":".join(h[i:i+2] for i in range(0, 10, 2))  # unique par instance, sinon MA les confond

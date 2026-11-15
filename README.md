@@ -1,4 +1,4 @@
-# Multiroom Raspberry Pi
+# Octopus Raspberry Pi
 
 Music Assistant (Spotify/Deezer, Cast, groupes) + squeezelite par sortie BT/jack + mini panel BT.
 
