@@ -1,0 +1,11 @@
+[Unit]
+Description=Multiroom panel
+After=network-online.target bluetooth.service
+
+[Service]
+User=__USER__
+ExecStart=/usr/bin/python3 /opt/multiroom/panel.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

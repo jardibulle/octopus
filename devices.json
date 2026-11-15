@@ -1,0 +1,6 @@
+[
+  {"name": "klipsch",  "mac": "AA:BB:CC:DD:EE:01", "adapter": "hci0", "modes": ["cast", "bt"], "default_mode": "cast"},
+  {"name": "homemini", "mac": "AA:BB:CC:DD:EE:02", "adapter": "hci0", "modes": ["cast", "bt"], "default_mode": "cast"},
+  {"name": "onyx",     "mac": "78:5E:A2:33:01:8A", "adapter": "hci0", "modes": ["bt"],         "default_mode": "bt"},
+  {"name": "ampli",    "sink": "alsa_output.platform-3f00b840.mailbox", "modes": ["local"],      "default_mode": "local"}
+]
