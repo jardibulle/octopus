@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Mini panel octopus : état BT, reconnexion, bascule Cast <-> BT. Stdlib uniquement."""
+"""Octopus mini panel: BT status, reconnect, Cast <-> BT switch. Stdlib only."""
 import json
 import os
 import subprocess
@@ -12,13 +12,13 @@ SOURCES = ("spotify", "deezer")
 
 
 def sources(path=MA_SETTINGS):
-    """Sources configurées dans Music Assistant, lues dans son settings.json.
-    ponytail: 'configuré' != 'token valide' ; passer par l'API MA si besoin du vrai statut."""
+    """Sources configured in Music Assistant, read from its settings.json.
+    ponytail: 'configured' != 'valid token'; use the MA API if the real status is needed."""
     try:
         with open(path) as f:
             provs = json.load(f).get("providers", {}).values()
     except (OSError, ValueError):
-        return {s: None for s in SOURCES}  # inconnu
+        return {s: None for s in SOURCES}  # unknown
     on = {p.get("domain") for p in provs if isinstance(p, dict) and p.get("enabled", True)}
     return {s: s in on for s in SOURCES}
 
@@ -29,7 +29,7 @@ def load():
 
 
 def find(devices, name):
-    """Seuls les noms de devices.json passent : jamais d'entrée brute vers une commande."""
+    """Only names from devices.json pass: raw input never reaches a command."""
     for d in devices:
         if d["name"] == name and d.get("mac"):
             return d
@@ -53,7 +53,7 @@ def status(d):
 
 def reconnect(d):
     run("bluetoothctl", "connect", d["mac"])
-    # Si le sink a disparu, le flux a glissé sur le sink "silence" : on relance pour le recâbler.
+    # If the sink vanished, the stream slid to the "silence" sink: restart to reattach it.
     run("sudo", "-n", "systemctl", "try-restart", f"squeezelite@{d['name']}")
 
 
@@ -62,10 +62,10 @@ def set_mode(d, mode):
         raise ValueError(mode)
     unit = f"squeezelite@{d['name']}"
     if mode == "bt":
-        run("sudo", "-n", "systemctl", "enable", "--now", unit)  # sq-run.sh fait le connect BT
+        run("sudo", "-n", "systemctl", "enable", "--now", unit)  # sq-run.sh does the BT connect
     else:
         run("sudo", "-n", "systemctl", "disable", "--now", unit)
-        run("bluetoothctl", "disconnect", d["mac"])  # libère l'enceinte pour Cast
+        run("bluetoothctl", "disconnect", d["mac"])  # frees the speaker for Cast
 
 
 PAGE = """<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width">
@@ -73,21 +73,21 @@ PAGE = """<!doctype html><meta charset=utf-8><meta name=viewport content="width=
 <style>body{font:16px system-ui;max-width:40em;margin:1em auto;padding:0 1em}
 td{padding:.4em}.on{color:green}.off{color:#c00}</style>
 <h1>Sources</h1><table id=s></table>
-<h1>Enceintes</h1><p><a href="" id=ma>Music Assistant</a></p><table id=t></table>
+<h1>Speakers</h1><p><a href="" id=ma>Music Assistant</a></p><table id=t></table>
 <script>
 const MA = location.protocol + '//' + location.hostname + ':8095';
 ma.href = MA;
 fetch('/api/sources').then(r => r.json()).then(src => {
   s.innerHTML = Object.entries(src).map(([n, ok]) => `<tr><td><b>${n}</b></td>
-    <td class=${ok?'on':'off'}>${ok===null?'état inconnu':ok?'configuré':'non configuré'}</td>
-    <td><a href="${MA}/#/settings/providers">${ok?'Gérer':'Configurer'} dans MA</a></td></tr>`).join('');
+    <td class=${ok?'on':'off'}>${ok===null?'unknown':ok?'configured':'not configured'}</td>
+    <td><a href="${MA}/#/settings/providers">${ok?'Manage':'Set up'} in MA</a></td></tr>`).join('');
 });
 async function post(u){await fetch(u,{method:'POST'});load()}
 async function load(){
   const ds = await (await fetch('/api/devices')).json();
   t.innerHTML = ds.map(d => `<tr><td><b>${d.name}</b></td>
-    <td class=${d.connected?'on':'off'}>${d.connected?'BT connecté':'BT déconnecté'}</td>
-    <td><button onclick="post('/api/${d.name}/reconnect')">Reconnecter</button></td>
+    <td class=${d.connected?'on':'off'}>${d.connected?'BT connected':'BT disconnected'}</td>
+    <td><button onclick="post('/api/${d.name}/reconnect')">Reconnect</button></td>
     <td>${d.modes.length>1 ? d.modes.map(m=>`<button ${m==d.mode?'disabled':''}
       onclick="post('/api/${d.name}/mode?m=${m}')">${m}</button>`).join(' ') : d.modes[0]}</td></tr>`).join('');
 }
@@ -132,5 +132,5 @@ class H(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    # ponytail: pas d'auth, LAN uniquement. Ajouter un reverse proxy avec auth si exposé.
+    # ponytail: no auth, LAN only. Put an authenticating reverse proxy in front if exposed.
     ThreadingHTTPServer(("0.0.0.0", PORT), H).serve_forever()

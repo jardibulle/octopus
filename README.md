@@ -1,12 +1,22 @@
-# Octopus Raspberry Pi
+# Octopus
 
-Music Assistant (Spotify/Deezer, Cast, groupes) + squeezelite par sortie BT/jack + mini panel BT.
+Multiroom audio on a Raspberry Pi: Music Assistant (Spotify, Deezer, groups) + one squeezelite instance per Bluetooth/jack output + a tiny Bluetooth status panel.
 
-1. Pour chaque enceinte BT (BT intégré, un seul contrôleur) : `bluetoothctl` → `scan on` → `pair <MAC>` → `trust <MAC>`.
-2. Remplir `devices.json` (MAC, adapter). Pour l'ampli, mettre dans `sink` le préfixe vu dans `pactl list short sinks` (ex. `alsa_output.platform-...`).
-3. `sudo ./install.sh`, puis reboot la 1re fois. Raspberry Pi OS Lite **64-bit**, Ethernet conseillé.
-4. MA `http://octopus.local:8095` : providers Spotify, Deezer (token ARL : cookie `arl` de deezer.com connecté), Chromecast, Squeezelite. Créer un Universal group « Tout l'appart » **par combinaison** Klipsch/HomeMini (version BT ou Cast), sinon une même enceinte joue en double.
-5. Calibrer : métronome sur le groupe, régler « sync adjust » de chaque player squeezelite jusqu'à ce qu'il s'aligne sur Cast.
-6. Panel `http://octopus.local:8080` : état BT, reconnecter, bascule cast/bt.
+## Setup
 
-Test : `python3 test_panel.py`.
+1. Pair each Bluetooth speaker once: `bluetoothctl` → `menu scan` → `transport bredr` → `back` → `scan on` → `pair <MAC>` → `trust <MAC>`.
+   Use the classic (BR/EDR) address, not the BLE one some Cast speakers also advertise.
+2. Fill in `devices.json` (MAC, adapter). For the jack output, set `sink` to the prefix shown by `pactl list short sinks` (e.g. `alsa_output.platform-...`).
+3. Run `sudo ./install.sh` (Raspberry Pi OS Lite **64-bit**), then reboot the first time. Safe to re-run.
+4. Music Assistant at `http://octopus.local:8095`: add the Spotify (and Deezer, via ARL token) music providers and the Squeezelite player provider.
+   Create a **sync group** with the squeezelite players: they play in sync natively.
+5. Panel at `http://octopus.local:8080`: Bluetooth status, reconnect, Cast/BT switch.
+
+## Notes
+
+- **One A2DP speaker per Bluetooth adapter**: the Pi 3B+ onboard chip refuses a second audio connection (`br-connection-create-socket`). Add a USB adapter (e.g. RTL8761B) per extra speaker.
+- **Pi 3B+ (1 GB RAM)**: `install.sh` caps Music Assistant at 650 MB (`gpu_mem=16`, memory cgroup, zram) so the first start can't freeze the Pi.
+- **Cast speakers** can join a Music Assistant *universal group*, but their latency (~2 s) is only aligned manually via each player's *sync adjust*.
+- Music Assistant on another machine: add `SERVER=<ip>` to `/etc/squeezelite/<name>.env`.
+
+Test: `python3 test_panel.py`.
