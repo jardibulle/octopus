@@ -4,9 +4,9 @@ Multiroom audio on a Raspberry Pi: Music Assistant (Spotify, Deezer, groups) + o
 
 ## Setup
 
-1. Pair each Bluetooth speaker once: `bluetoothctl` → `menu scan` → `transport bredr` → `back` → `scan on` → `pair <MAC>` → `trust <MAC>`.
+1. Pair each Bluetooth speaker once, on its own adapter (`bluetoothctl list`): `bluetoothctl` → `select <adapter address>` → `menu scan` → `transport bredr` → `back` → `scan on` → `pair <MAC>` → `trust <MAC>`.
    Use the classic (BR/EDR) address, not the BLE one some Cast speakers also advertise.
-2. Fill in `devices.json` (MAC, adapter). For the jack output, set `sink` to the prefix shown by `pactl list short sinks` (e.g. `alsa_output.platform-...`).
+2. Fill in `devices.json`: speaker `mac` and its `adapter` address (not `hciN`, which can change across boots). For the jack output, set `sink` to the prefix shown by `pactl list short sinks` (e.g. `alsa_output.platform-...`).
 3. Run `sudo ./install.sh` (Raspberry Pi OS Lite **64-bit**), then reboot the first time. Safe to re-run.
 4. Music Assistant at `http://octopus.local:8095`: add the Spotify (and Deezer, via ARL token) music providers and the Squeezelite player provider.
    Create a **sync group** with the squeezelite players: they play in sync natively.

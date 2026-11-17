@@ -36,23 +36,43 @@ def find(devices, name):
     raise KeyError(name)
 
 
-def parse_connected(info):
-    return any(l.strip() == "Connected: yes" for l in info.splitlines())
+def parse_connected(out):
+    return out.strip() == "b true"  # busctl get-property output
 
 
 def run(*cmd):
     return subprocess.run(cmd, capture_output=True, text=True, timeout=30)
 
 
+def adapter_path(addr):
+    """D-Bus path of the BT adapter with this address (hciN numbering can change across boots)."""
+    for n in sorted(os.listdir("/sys/class/bluetooth")):
+        if ":" in n:  # hci0:12 = a connection, not an adapter
+            continue
+        out = run("busctl", "get-property", "org.bluez", f"/org/bluez/{n}", "org.bluez.Adapter1", "Address").stdout
+        if f'"{addr.upper()}"' in out.upper():
+            return f"/org/bluez/{n}"
+    raise LookupError(addr)
+
+
+def bt(d, *args):
+    """busctl call/get-property on the device, through its own adapter."""
+    path = adapter_path(d["adapter"]) + "/dev_" + d["mac"].replace(":", "_")
+    return run("busctl", *args[:1], "org.bluez", path, "org.bluez.Device1", *args[1:])
+
+
 def status(d):
-    connected = parse_connected(run("bluetoothctl", "info", d["mac"]).stdout)
+    try:
+        connected = parse_connected(bt(d, "get-property", "Connected").stdout)
+    except (LookupError, OSError):
+        connected = False
     active = run("systemctl", "is-active", f"squeezelite@{d['name']}").stdout.strip() == "active"
     return {"name": d["name"], "modes": d["modes"], "connected": connected,
             "mode": "bt" if active else "cast"}
 
 
 def reconnect(d):
-    run("bluetoothctl", "connect", d["mac"])
+    bt(d, "call", "Connect")
     # If the sink vanished, the stream slid to the "silence" sink: restart to reattach it.
     run("sudo", "-n", "systemctl", "try-restart", f"squeezelite@{d['name']}")
 
@@ -65,7 +85,7 @@ def set_mode(d, mode):
         run("sudo", "-n", "systemctl", "enable", "--now", unit)  # sq-run.sh does the BT connect
     else:
         run("sudo", "-n", "systemctl", "disable", "--now", unit)
-        run("bluetoothctl", "disconnect", d["mac"])  # frees the speaker for Cast
+        bt(d, "call", "Disconnect")  # frees the speaker for Cast
 
 
 PAGE = """<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width">
@@ -128,6 +148,8 @@ class H(BaseHTTPRequestHandler):
                 raise KeyError(parts[2])
         except (KeyError, ValueError):
             return self.send(400, "{}")
+        except LookupError:  # adapter not plugged in
+            return self.send(503, "{}")
         self.send(200, "{}")
 
 

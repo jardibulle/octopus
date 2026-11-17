@@ -1,8 +1,8 @@
 from panel import find, parse_connected
 
-assert parse_connected("Device AA\n\tPaired: yes\n\tConnected: yes\n")
-assert not parse_connected("Device AA\n\tConnected: no\n")
-assert not parse_connected("Device AA not available\n")
+assert parse_connected("b true\n")
+assert not parse_connected("b false\n")
+assert not parse_connected("")  # unknown device / adapter: busctl prints nothing on stdout
 
 devs = [{"name": "bose", "mac": "AA", "modes": ["bt"]}, {"name": "ampli", "sink": "x", "modes": ["local"]}]
 assert find(devs, "bose")["mac"] == "AA"

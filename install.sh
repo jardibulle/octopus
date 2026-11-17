@@ -14,7 +14,7 @@ systemctl disable --now squeezelite 2>/dev/null || true   # the package's defaul
 usermod -aG bluetooth,docker "$U"
 loginctl enable-linger "$U"   # user PipeWire session runs without login (headless)
 
-# ponytail: one A2DP speaker per BT adapter (Pi 3B+ onboard chip refuses a 2nd one); add USB adapters for more.
+# One A2DP speaker per BT adapter (Pi 3B+ onboard chip refuses a 2nd one): devices.json maps each to an adapter address.
 CFG=/boot/firmware/config.txt; [ -f "$CFG" ] || CFG=/boot/config.txt
 grep -q '^dtparam=audio=on' "$CFG" || echo 'dtparam=audio=on' >> "$CFG"   # 3.5 mm jack
 grep -q '^gpu_mem=' "$CFG" || echo 'gpu_mem=16' >> "$CFG"   # headless: gives ~50 MB of RAM back
@@ -74,7 +74,8 @@ for d in json.load(open("/opt/octopus/devices.json")):
     h = hashlib.md5(n.encode()).hexdigest()
     sq_mac = "02:" + ":".join(h[i:i+2] for i in range(0, 10, 2))  # unique per instance, otherwise MA merges them
     sink = d.get("sink") or "bluez_output." + mac.replace(":", "_")
-    open(f"/etc/squeezelite/{n}.env", "w").write(f"NAME={n}\nSQ_MAC={sq_mac}\nSINK={sink}\nBT_MAC={mac}\n")
+    open(f"/etc/squeezelite/{n}.env", "w").write(
+        f"NAME={n}\nSQ_MAC={sq_mac}\nSINK={sink}\nBT_MAC={mac}\nADAPTER={d.get('adapter', '')}\n")
     if d["default_mode"] in ("bt", "local"):
         print(n)
 EOF
