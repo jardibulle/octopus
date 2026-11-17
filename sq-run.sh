@@ -30,5 +30,11 @@ pid=$!
 while kill -0 "$pid" 2>/dev/null; do
   sleep 5
   [ "$(sink "$SINK")" = "$cur" ] || { echo "sink '$SINK' changed, restarting" >&2; kill "$pid"; exit 1; }
+  # WirePlumber can park our stream on "silence" (e.g. BT sink not ready when it opened): move it back.
+  set -- $(pactl list sink-inputs | awk -v pid="$pid" '/^Sink Input #/{id=substr($3,2)} /^\tSink: /{s=$2}
+    /application.process.id = /{gsub(/"/,"",$3); if ($3==pid) {print id, s; exit}}')
+  if [ $# = 2 ] && [ "$2" != "${cur%% *}" ]; then
+    pactl move-sink-input "$1" "${cur#* }" && echo "stream moved back to $SINK" >&2 || true
+  fi
 done
 exit 1
