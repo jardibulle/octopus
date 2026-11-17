@@ -20,3 +20,7 @@ Multiroom audio on a Raspberry Pi: Music Assistant (Spotify, Deezer, groups) + o
 - Music Assistant on another machine: add `SERVER=<ip>` to `/etc/squeezelite/<name>.env`.
 
 Test: `python3 test_panel.py`.
+
+## TODO
+
+- "Ask Claude" debug page on the panel: see [docs/TODO-debug-assistant.md](docs/TODO-debug-assistant.md).
