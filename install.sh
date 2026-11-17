@@ -24,6 +24,12 @@ swapon --show | grep -q zram || { apt-get install -y zram-tools; printf 'ALGO=zs
 CMD=$(dirname "$CFG")/cmdline.txt
 grep -q cgroup_memory "$CMD" || sed -i '1 s/$/ cgroup_enable=memory cgroup_memory=1/' "$CMD"
 rfkill unblock bluetooth || true
+# Broadcom BCM20702 USB BT adapters (0a5c:21e8) crash ("hardware error 0x01") without their patch file
+FW=/lib/firmware/brcm/BCM20702A1-0a5c-21e8.hcd
+if lsusb | grep -q 0a5c:21e8 && [ ! -f "$FW" ]; then
+  wget -qO "$FW" https://github.com/winterheart/broadcom-bt-firmware/raw/master/brcm/BCM20702A1-0a5c-21e8.hcd
+  echo "BT adapter firmware installed: unplug/replug the USB BT adapters (or reboot)."
+fi
 # Disable Wi-Fi power saving (otherwise audio dropouts while streaming)
 printf '[connection]\nwifi.powersave = 2\n' > /etc/NetworkManager/conf.d/wifi-powersave-off.conf
 iw dev wlan0 set power_save off 2>/dev/null || true
