@@ -10,6 +10,7 @@ if [ -n "${BT_MAC:-}" ]; then
       | grep -qi "\"${ADAPTER:-}\"" && ap="/org/bluez/$n" && break
   done
   [ -n "$ap" ] || { echo "adapter $ADAPTER not found" >&2; exit 1; }
+  busctl set-property org.bluez "$ap" org.bluez.Adapter1 Powered b true 2>/dev/null || true  # e.g. after a replug
   busctl call org.bluez "$ap/dev_$(echo "$BT_MAC" | tr : _)" org.bluez.Device1 Connect >/dev/null 2>&1 || true
 fi
 
