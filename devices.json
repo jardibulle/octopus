@@ -1,7 +1,7 @@
 [
   {"name": "klipsch",  "mac": "30:58:90:3A:C4:A3", "adapter": "B8:27:EB:35:B5:6A", "modes": ["cast", "bt"], "default_mode": "bt"},
   {"name": "homemini", "mac": "AA:BB:CC:DD:EE:02", "adapter": "B8:27:EB:35:B5:6A", "modes": ["cast", "bt"], "default_mode": "cast"},
-  {"name": "onyx",     "mac": "78:5E:A2:33:01:8A", "adapter": "USB_DONGLE_1",      "modes": ["bt"],         "default_mode": "bt"},
-  {"name": "bose",     "mac": "E4:58:BC:C9:5B:C9", "adapter": "USB_DONGLE_2",      "modes": ["bt"],         "default_mode": "bt"},
+  {"name": "onyx",     "mac": "78:5E:A2:33:01:8A", "adapter": "34:C9:F0:85:D4:2E", "modes": ["bt"],         "default_mode": "bt"},
+  {"name": "bose",     "mac": "E4:58:BC:C9:5B:C9", "adapter": "34:C9:F0:85:D4:37", "modes": ["bt"],         "default_mode": "bt"},
   {"name": "ampli",    "sink": "alsa_output.platform-3f00b840.mailbox", "modes": ["local"], "default_mode": "local"}
 ]
